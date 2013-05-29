@@ -1,0 +1,43 @@
+-- Code 07 - CircleTest
+-- will upload to Codea
+
+-- Bruce Elliott
+-- April 2013
+
+-- Use this function to perform your initial setup
+function setup()
+    print("Circle Test")
+    print("Touch the screen to move the circle")
+    print("Drag the circle and it will follow")
+    
+    -- Set the starting point for the circle
+    X = 50
+    Y = 50()
+end
+
+-- This function gets called once every frame
+function draw()
+    
+-- Set up the screen for drawing
+    background(40, 40, 50)
+    fill(35, 82, 208, 255)
+    -- This sets the line thickness
+    stroke(28, 203, 20, 255)
+    strokeWidth(5)
+    
+-- Draw the circle
+    ellipse(X, Y,100)
+    
+end
+
+function touched(touch)
+-- Check for a touch
+-- X and Y will update 
+-- if you touch the screen
+-- or as you drag across the screen
+
+    if touch.state == BEGAN or touch.state == MOVING then
+        X = touch.x
+        Y = touch.y
+    end
+end

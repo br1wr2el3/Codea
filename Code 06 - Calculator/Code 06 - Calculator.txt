@@ -1,0 +1,292 @@
+--# Code 06 - Calculator Main
+-- Can be uploaded to Codea
+
+-- Calculator Controller
+
+-- Bruce Elliott
+-- April 2013
+
+-- Model: CalculatorModel
+-- View: Button and SetKeyboard
+-- Controller: Main
+
+-- Use this function to perform your initial setup
+function setup()
+-- Initialize Keyboard
+-- Initialize Calculator Model
+    print("Calculator Project")
+    
+    SetKeyboard:init() 
+    CalculatorModel:init()
+    
+end
+
+-- This function gets called once every frame
+function draw()
+-- Do calculator processing
+-- Set value for the display (output results)
+-- Draw calculator face
+    -- This sets a dark background color 
+    background(40, 40, 50)
+
+    -- Do your drawing here
+    CalculatorModel:draw()
+    kTab[17] = Button(showValue, 200, HEIGHT - HEIGHT/8)
+    SetKeyboard:drawButton()
+
+end
+
+function touched(touch)
+-- Check each key for press
+    for k, v in pairs(kTab) do
+        temp=  v:touched(touch)
+    end
+end
+
+function buttonPressed(newName)
+-- Tell CalculatorModel which button was pressed
+  --  print("main "..newName)
+    CalculatorModel:buttonPressed(newName)
+end
+
+--# Book 06 - CalculatorModel
+CalculatorModel = class()
+
+function CalculatorModel:init()
+-- Setup calculator model
+-- Operations use two operands valueOne and valueTwo
+-- Set display to zero
+-- Default operation set to addition (+)
+    -- you can accept and set parameters here
+
+    valueOne = 0
+    valueTwo = 0
+    operation = "+"
+    display = 0
+end
+
+function CalculatorModel:draw()
+-- Send display value to controller
+    
+       showValue = display
+
+end
+    
+    
+function CalculatorModel:buttonPressed(keyName)
+-- process each key press
+
+    thisName = keyName
+
+    if keyName == "C" then
+    -- "C" Clear all do rest
+        C()
+     elseif keyName == "+" then
+    -- "+" Store plus operation
+        plus()
+     elseif keyName == "-" then
+    -- "-" Store minus operation
+        minus()
+     elseif keyName == "*" then
+    -- "*" Store product operation
+        times()
+     elseif keyName == "/" then
+    -- "/" Store divide operation
+        divide()
+      elseif keyName == "=" then
+    -- "=" process operation to get new result
+        equal()
+      else
+    -- everything esle means process digit
+        digit()
+      end
+end
+
+function C()
+-- Set model to defaults
+    valueOne = 0
+    valueTwo = 0
+    operation = "+"
+    display = 0
+end
+
+function plus()
+-- store display, set operation to "+"
+    valueOne = display
+    display = 0
+    operation = "+"
+end
+function minus()
+-- store display, set operation to "-"
+    valueOne = display
+    display = 0
+    operation = "-"
+end
+function times()
+-- store display, set operation to "*"
+    valueOne = display
+    display = 0
+    operation = "*"
+end
+function divide()
+-- store display, set operation to "/"
+-- no divide by zero check system generates "inf"
+    valueOne = display
+    display = 0
+    operation = "/"
+end
+
+function digit()
+--add digit to display
+    if display == 0 then
+        display = thisName
+    else
+        display = display..thisName
+    end
+ end
+    
+function equal()
+-- generate result
+    valueTwo = display
+
+    if operation == "+" then
+        result = valueOne + valueTwo
+
+    elseif operation == "-" then
+        result = valueOne - valueTwo
+
+    elseif operation == "*" then
+        result = valueOne * valueTwo
+
+    elseif operation == "/" then
+        result = valueOne / valueTwo
+        
+    end
+-- display result, save result
+    display = result
+    valueOne = result
+    valueTwo = 0
+    operation ="+"
+end
+
+--# Book 06 Button
+Button = class()
+
+function Button:init(displayName, x, y)
+-- Initialize individual btton object
+    -- you can accept and set parameters here
+    self.displayName = displayName
+    
+    self.pos = vec2(x,y)
+    self.size = vec2(0,0)
+    self.action = nil
+    self.color = color(113,66,190,255)
+  --  print(self.displayName.." "..self.pos.x.." "..self.pos.y)
+end
+
+function Button:draw()
+-- Draw individual buttons
+    -- Codea does not automatically call this method
+    
+-- pushStyle saves any style info
+    pushStyle()
+    
+    font("ArialRoundedMTBold")
+    fontSize(22)
+    
+-- Determine string size
+    local w,h = textSize(self.displayName)
+    w = w + 20
+    h = h + 2
+    
+-- Draw rectangle
+        rect(self.pos.x - w/2,
+         self.pos.y - h/2,
+         w, h)
+    self.size = vec2(w,h)
+    
+-- Put label on key
+    textMode(CENTER)
+    fill(54,65,96,255)
+    text(self.displayName,self.pos.x,self.pos.y)
+    
+-- restore previous style info
+    popStyle()
+end
+
+function Button:hit(p)
+-- Did touch hit one of our keys.
+    local w,h = textSize(self.displayName)
+    w = w + 20
+    h = h + 40
+    local l = self.pos.x - w/2
+    local r = self.pos.x + w/2
+    local t = self.pos.y + h/2
+    local b = self.pos.y - h/2
+    
+    if p.x > l and p.x < r
+       and p.y > b and p.y < t then
+    -- key was pressed
+        return true
+        end
+    -- key not pressed
+            return false
+    end
+
+
+function Button:touched(touch)
+-- React to a touch
+    -- Codea does not automatically call this method
+    if touch.state == ENDED and
+       self:hit(vec2(touch.x,touch.y)) then
+        -- a calc key was pressed
+        if self.action then
+            newName = self.displayName
+            self.action()
+            
+        end
+    end
+    
+end
+
+function Button:action()
+-- Send button name to controller
+    buttonPressed(newName)
+end
+
+--# Book 06 SetKeyboard
+SetKeyboard = class()
+
+function SetKeyboard:init()
+-- Setup calculator button objects
+    -- you can accept and set parameters here
+    kTab={}
+    kTab[1] = Button("1", 100, HEIGHT-HEIGHT/4)
+    kTab[2] = Button("2", 200,HEIGHT-HEIGHT/4)
+    kTab[3] = Button("3",300,HEIGHT-HEIGHT/4)
+    kTab[11] = Button("+",400,HEIGHT-HEIGHT/4)
+    kTab[4] = Button("4",100,HEIGHT-HEIGHT/4-80)
+    kTab[5] = Button("5",200,HEIGHT-HEIGHT/4-80)
+    kTab[6] = Button("6",300,HEIGHT-HEIGHT/4-80)
+    kTab[12] = Button("-",400,HEIGHT-HEIGHT/4 - 80)
+    kTab[7] = Button("7",100,HEIGHT-HEIGHT/4-160)
+    kTab[8] = Button("8",200,HEIGHT-HEIGHT/4-160)
+    kTab[9] = Button("9",300,HEIGHT-HEIGHT/4-160)
+    kTab[13] = Button("*",400,HEIGHT-HEIGHT/4-160)
+    kTab[10] = Button("0",200,HEIGHT-HEIGHT/4-240)
+    kTab[15] = Button("C",100,HEIGHT-HEIGHT/4-240)
+    kTab[14] = Button("/",400,HEIGHT-HEIGHT/4-240)
+    kTab[16] = Button("=",300,HEIGHT-HEIGHT/4-240)
+
+    kTab[17] = Button("0",300,HEIGHT-HEIGHT/8)
+  
+end
+
+function SetKeyboard:drawButton()
+-- Draw the keys for the keyboard
+      for k, v in pairs(kTab) do
+        v:draw()
+        end
+    
+end
+

@@ -1,0 +1,31 @@
+-- Code 01 - Box
+-- Tested to copy and word in Codea
+
+-- Bruce Elliott
+-- April 2013
+
+-- Just draw a box on the screen.  A first step to Codea programs.
+
+-- Use this function to perform your initial setup
+function setup()
+    print("Draw box on screen")
+    
+    --Store the location of our box in two variables
+    
+    x = 100
+    y = 200
+end
+
+-- This function gets called once every frame
+function draw()
+    -- This sets a dark background color 
+    background(40, 40, 50)
+
+    -- This sets the line thickness
+    strokeWidth(5)
+
+    -- Do your drawing here
+    
+    rect(x, y, WIDTH/2, HEIGHT/2)
+    
+end

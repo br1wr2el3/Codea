@@ -1,0 +1,188 @@
+--# Main
+
+-- Code 10 Sprite Demo
+
+-- Bruce Elliott
+-- April 2013
+
+-- Use this function to perform your initial setup
+function setup()
+    -- Initialize the object table
+    SetObject:init()
+    -- Parameter Hit turns hit details on and off
+    parameter.boolean("Hit", false)
+end
+
+-- This function gets called once every frame
+function draw()
+    -- This sets a dark background color 
+    background(193, 193, 206, 255)
+    
+    -- Draw each object in table objTab
+    for i, j in pairs(objTab) do
+        MyObject:draw(objTab[i])
+    end
+end
+
+function touched(touch)
+    -- Process each object for touches
+    for k, v in pairs(objTab) do
+        -- Set temp to next object
+        local temp = objTab[k]
+        local pos = vec2(temp[4], temp[5])
+        local objRot = temp[6]
+        local size = vec2(spriteSize(temp[3]))
+        
+        -- Set ship image size info
+        shipX = pos.x
+        shipY = pos.y
+        -- Divide by two to make computations easier
+        shipL = size.x/2
+        shipW = size.y/2
+        
+        -- Store touch position
+        tx = touch.x
+        ty = touch.y
+        -- Store delta (change on position) data
+        tdX = touch.deltaX
+        tdY = touch.deltaY
+
+        if touch.state == BEGAN or touch.state == MOVING then
+            if (tx > (shipX - shipL) and tx < (shipX + shipL))  and
+               (ty > (shipY - shipW) and ty <  (shipY + shipW)) then
+                -- An object was touched update object data
+                pos.x = tx
+                pos.y = ty
+                -- Store new position in object table
+                objTab[k][4]= pos.x
+                objTab[k][5] = pos.y
+                    -- Update objRot info
+                if tdX < 0 and tdY < 0 then
+                    objRot = 315
+                elseif tdX < 0 and tdY > 0 then
+                    objRot = 255
+                elseif tdX > 0 and tdY < 0 then
+                    objRot = 45
+                elseif tdX > 0 and tdY > 0 then
+                    objRot = 135
+                end
+                    -- Update objRot data
+                    objTab[k][6] = objRot
+                    -- Determine if objects have collided
+                    thisTab = MyObject:collide(objTab[k])
+            end
+        end 
+        -- Display hit table
+        if Hit == true then
+            -- unpack converts table data to a string
+            print(  unpack(thisTab, 1, #thisTab))
+        end
+       
+    end
+end
+
+
+
+
+
+--# MyObject
+MyObject = class()
+
+function MyObject:draw(this)
+    -- Get object data
+    local spriteName = this[3]
+    local size = vec2(spriteSize(this[3]))
+    local pos = vec2( this[4],this[5])
+    local objRot = this[6]
+
+    -- Store old graphic info
+    pushMatrix()
+    
+    -- Draw Sprite
+    translate(pos.x, pos.y)
+    rotate(objRot)
+    sprite(spriteName, 0,0)
+ 
+    -- Restore old data
+    popMatrix()
+end
+
+ 
+function MyObject:collide(this)
+    -- Clear output window
+    output.clear()
+    -- Get object info
+    selfX = this[4]
+    selfY = this[5]
+    local size = vec2(spriteSize(this[3]))
+    selfW = size.x / 2
+    selfL = size.y / 2
+    
+    -- Setup hit table
+    k= 0
+    hitTab = {}
+
+    -- Insert zeros into the table
+    for k, v in pairs(objTab) do
+            table.insert(hitTab, k, 0)
+        end
+    -- Add one more table location
+    table.insert(hitTab, #hitTab, 0)
+    
+    -- Check for object collisions
+    for k, v in pairs(objTab) do
+        -- Store this object number at end of the table
+        hitTab[#hitTab] = this[2]
+        -- Make sure we don't check ourself for collision
+        if this[2] ~= objTab[k][2] then
+            -- Get next object data
+            objX = objTab[k][4]
+            objY = objTab[k][5]
+            objSize = vec2(spriteSize(objTab[k][3]))
+            objW = objSize.x /2
+            objL = objSize.y /2
+            obj = objTab[k][2]
+            
+            -- Check for collision
+            if not(selfX - selfW > objX + objW or
+                selfX + selfW < objX - objW or
+                selfY - selfL > objY + objL or
+                selfY + selfL < objY - objL) then
+                -- Collision set mark in hit table
+                hitTab[k ] = k
+                -- Display hit
+                print("hit")
+            end
+        end
+    end
+    -- Return hit table to touch for possible display 
+    -- Later this would be used to control more actions
+    -- table has zero if no hit on object or object number if hit happened
+    -- Last value is moving object other numbers are remaining objects 
+    return hitTab    
+end 
+    
+    
+    
+
+--# SetObject
+SetObject = class()
+
+function SetObject:init()
+    -- you can accept and set parameters here
+    
+    -- Status (not used yet)
+    -- "a" - active
+    -- "n" - not active
+    -- "d" - destroyed
+
+    objTab={}
+    objTab[1] = {"a", 1, "Tyrian Remastered:Boss D", 500,500,52}
+    objTab[2] = {"a", 2, "Tyrian Remastered:Boss C", 300,403,102}
+    objTab[3] = {"a", 3, "Tyrian Remastered:Boss B", 500,600,132}
+    objTab[4] = {"a", 4, "Tyrian Remastered:Plane Boss",700,700,0}
+    objTab[5] = {"a", 5, "Tyrian Remastered:Space Bug Left", 200, 500,90}
+ 
+  
+end
+
